@@ -1,5 +1,7 @@
 package fpinscala.datastructures
 
+import scala.annotation.tailrec
+
 sealed trait List[+A] // `List` data type, parameterized on a type, `A`
 case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
 /* Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`,
@@ -50,19 +52,55 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
 
-  def tail[A](l: List[A]): List[A] = ???
+  def tail[A](l: List[A]): List[A] = l match {
+    case Cons(x,xs) => xs
+    case _ => Nil
+  }
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  def setHead[A](l: List[A], h: A): List[A] = Cons(h,l)
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  def drop[A](l: List[A], n: Int): List[A] = (l,n) match {
+    case (Nil,_) => l
+    case (Cons(head,tail),0) => Cons(head,tail)
+    case (Cons(head,tail),num) => drop(tail,num-1)
+  }
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
 
-  def init[A](l: List[A]): List[A] = ???
+    case Nil => Nil
+    case Cons(head, tail) => {
+      if (f(head)) Cons(head,dropWhile(tail,f))
+      else Nil
+    }
+  }
 
-  def length[A](l: List[A]): Int = ???
+  def init[A](l: List[A]): List[A] = { ???
+    //case Nil => Nil
+    //case Cons(head,tail) => Cons(head, tail)
+  }
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
+  def length[A](l: List[A]): Int = l match {
+    case Nil => 0
+    case Cons(head, tail) => 1 + length(tail)
+  }
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  def lengthTailRecusrive[A](l: List[A]): Int = {
+
+    @tailrec
+    def go(list:List[A],acc:Int):Int = list match {
+      case Nil => acc
+      case Cons (head, tail) => go(tail,acc+1)
+    }
+    go(l,0)
+  }
+
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(head, tail) => foldLeft(tail,f(z,head))(f)
+  }
+
+  def map[A,B](l: List[A])(f: A => B): List[B] = l match {
+    case  Nil => Nil
+    case Cons(head, tail) => Cons(f(head),map(tail)(f))
+  }
 }
